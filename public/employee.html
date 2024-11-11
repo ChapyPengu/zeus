@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/index.css">
+  <title>Perfil de empleado</title>
+</head>
+
+<body>
+  <header>
+    <h1>Tienda de Componentes para Computadoras</h1>
+  </header>
+  <section class="container">
+    <div class="links-to">
+      <a id="home-link" class="to" href="/">Inicio</a>
+      <a id="singout-link" class="to" href="/login">Iniciar sesion</a>
+      <p id="logout-link" class="to">Cerrar sesion</p>
+    </div>
+  </section>
+  <main>
+      <h2>Registro de Entradas y Salidas</h2>
+      <ul class="records-list">
+        <li class="records-item">
+          <p class="records-item__main">Fecha</p>
+          <p class="records-item__main">Hora de Entrada</p>
+          <p class="records-item__main">Hora de Salida</p>
+        </li>
+        <li class="records-item">
+          <p>2024-10-17</p>
+          <p>08:00 AM</p>
+          <p>04:00 PM</p>
+        </li>
+      </ul>
+  </main>
+  <main>
+      <h2>Registro de Ausencias y Horas Extras</h2>
+      <ul class="records-attendance-list">
+        <li class="records-attendance-item">
+          <p class="records-attendance-item__main">Fecha</p>
+          <p class="records-attendance-item__main">Ausencia</p>
+          <p class="records-attendance-item__main">Horas Extras</p>
+        </li>
+        <li class="records-attendance-item">
+          <p>2024-10-15</p>
+          <p>No</p>
+          <p>2 horas</p>
+        </li>
+      </ul>
+  </main>
+  
+  <footer>
+    <p>&copy; 2025 Tienda de Componentes</p>
+  </footer>
+  <script src="/service.js"></script>
+  <script src="/main.js"></script>
+  <script>
+    const $singout = document.querySelector('#singout-link')
+    const $logout = document.querySelector('#logout-link')
+    const cookies = {}
+
+    document.cookie.split(';').forEach(i => {
+      const [key, value] = i.split('=')
+      cookies[key] = value
+    })
+
+    if (cookies.role) {
+      $singout.style.display = 'none'
+    } else {
+      $logout.style.display = 'none'
+    }
+
+    if (cookies.role === 'employee' || cookies.role === 'manager') {
+      document.querySelector('#home-link').style.display = 'none'
+    }
+
+    $logout.addEventListener('click', async () => {
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST'
+      })
+      const data = await res.json()
+      console.log(data)
+      location.href = '/'
+    })
+  </script>
+</body>
+
+</html>

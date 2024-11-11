@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Component {
+  id        Int                @id @default(autoincrement())
+  name      String
+  details   String
+  price     Int
+  image     String             @default("default")
+  available Boolean            @default(true)
+  projects  ProjectComponent[]
+  orders    OrderComponent[]
+}
+
+model Training {
+  id        Int                @id @default(autoincrement())
+  name      String
+  employees EmployeeTraining[]
+}
+
+model EmployeeTraining {
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId Int
+  training   Training @relation(fields: [trainingId], references: [id])
+  trainingId Int
+
+  @@id([employeeId, trainingId])
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  name     String
+  email    String    @unique
+  password String
+  role     String
+  client   Client?
+  employee Employee?
+  manager  Manager?
+}
+
+model AttendanceRecord {
+  id         Int      @id @default(autoincrement())
+  date       String // date/month/year
+  income     String
+  exit       String
+  absent     Boolean? @default(false)
+  justified  Boolean?
+  extras     Int?     @default(0)
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId Int
+}
+
+model PaymentRecord {
+  id         Int      @id @default(autoincrement())
+  date       String // month/year
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId Int
+}
+
+model Skill {
+  id         Int      @id @default(autoincrement())
+  name       String
+  Employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId Int
+}
+
+model Employee {
+  id               Int                @id @default(autoincrement())
+  user             User               @relation(fields: [userId], references: [id])
+  userId           Int                @unique
+  available        Boolean            @default(true)
+  salary           Int
+  start            String // date/month/year
+  skills           Skill[]
+  projects         EmployeeProject[]
+  attendanceRecord AttendanceRecord[]
+  PaymentRecord    PaymentRecord[]
+  trainings        EmployeeTraining[]
+}
+
+model Project {
+  id         Int                @id @default(autoincrement())
+  employees  EmployeeProject[]
+  components ProjectComponent[]
+}
+
+model ProjectComponent {
+  project     Project   @relation(fields: [projectId], references: [id])
+  projectId   Int
+  component   Component @relation(fields: [componentId], references: [id])
+  componentId Int
+
+  @@id([projectId, componentId])
+}
+
+model PerformanceRecerd {
+  id                        Int              @id @default(autoincrement())
+  performance               Int
+  description               String
+  employeeProject           EmployeeProject? @relation(fields: [employeeProjectEmployeeId, employeeProjectProjectId], references: [employeeId, projectId])
+  employeeProjectEmployeeId Int?
+  employeeProjectProjectId  Int?
+}
+
+model EmployeeProject {
+  employee          Employee            @relation(fields: [employeeId], references: [id])
+  employeeId        Int
+  project           Project             @relation(fields: [projectId], references: [id])
+  projectId         Int
+  performanceRecord PerformanceRecerd[]
+
+  @@id([employeeId, projectId])
+}
+
+model Manager {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @unique
+}
+
+model Client {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @unique
+}
+
+model Order {
+  id         Int              @id @default(autoincrement())
+  name       String
+  email      String
+  address    String
+  components OrderComponent[]
+}
+
+model OrderComponent {
+  order       Order     @relation(fields: [orderId], references: [id])
+  orderId     Int
+  component   Component @relation(fields: [componentId], references: [id])
+  componentId Int
+
+  @@id([orderId, componentId])
+}

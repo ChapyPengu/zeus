@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/index.css">
+  <title>Perfil de gerente</title>
+</head>
+
+<body>
+  <header>
+    <h1>Tienda de Componentes para Computadoras</h1>
+  </header>
+  <section class="container">
+    <div class="links-to">
+      <a class="to" href="/">Inicio</a>
+      <a id="singout-link" class="to" href="/login">Iniciar sesion</a>
+      <p id="logout-link" class="to">Cerrar sesion</p>
+    </div>
+  </section>
+  <main>
+    <h2>Lista de Empleados</h2>
+    <ul id="employees-list" class="employees-list">
+      <li class="employees-item">
+        <p class="employees-item__main">Id</p>
+        <p class="employees-item__main">Nombre</p>
+        <p class="employees-item__main">Email</p>
+        <p class="employees-item__main">Salario</p>
+        <p class="employees-item__main">Disponible</p>
+      </li>
+    </ul>
+  </main>
+  <main>
+    <h2>Buscar Componentes</h2>
+    <input id="searchInput" placeholder="Buscar componentes..." onkeyup="filterComponents()">
+    <h2>Lista de Componentes</h2>
+    <ul class="components">
+    </ul>
+  </main>
+  <footer>
+    <p>&copy; 2025 Tienda de Componentes</p>
+  </footer>
+  <script src="/service.js"></script>
+  <script src="/main.js"></script>
+  <script>
+    const $singout = document.querySelector('#singout-link')
+    const $logout = document.querySelector('#logout-link')
+    const cookies = {}
+
+    document.cookie.split(';').forEach(i => {
+      const [key, value] = i.split('=')
+      cookies[key] = value
+    })
+
+    if (cookies.role) {
+      $singout.style.display = 'none'
+    } else {
+      $logout.style.display = 'none'
+    }
+
+    $logout.addEventListener('click', async () => {
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST'
+      })
+      const data = await res.json()
+      console.log(data)
+      location.href = '/'
+    })
+  </script>
+  <script>
+    const $components = document.querySelector('.components')
+    const cache = getCache()
+    if (!cache.components) {
+      fetch('/api/component')
+        .then(res => res.json())
+        .then(components => {
+          setCache('components', components)
+          components.forEach(c => {
+            const $component = document.createElement('li')
+            const $button = document.createElement('button')
+            $button.className = 'btn'
+            $button.onclick = () => addComponent(c)
+            $button.innerHTML = 'Agregar al pedido'
+            $component.className = 'component'
+            $component.innerHTML = `
+              <a class="component__link" href="${`/component/${c.id}`}">
+                <img class="component__image" src="${c.image}" alt="${c.name}">
+              </a>
+              <p class="component__text">${c.name}</p>
+              <p class="component__text">${c.details}</p>
+              <p class="component__text">$${c.price}</p>
+              <p class="component__text">${c.available ? 'Disponible' : 'No disponible'}</p>
+          `
+            $component.appendChild($button)
+            $components.appendChild($component)
+          })
+        })
+        .catch(err => console.log(err))
+    } else {
+      cache.components.forEach(c => {
+        const $component = document.createElement('li')
+        const $button = document.createElement('button')
+        $button.className = 'btn'
+        $button.onclick = () => addComponent(c)
+        $button.innerHTML = 'Agregar al pedido'
+        $component.className = 'component'
+        $component.innerHTML = `
+              <a class="component__link" href="${`/component/${c.id}`}">
+                <img class="component__image" src="${c.image}" alt="${c.name}">
+              </a>
+              <p class="component__text">${c.name}</p>
+              <p class="component__text">${c.details}</p>
+              <p class="component__text">$${c.price}</p>
+              <p class="component__text">${c.available ? 'Disponible' : 'No disponible'}</p>
+          `
+        $component.appendChild($button)
+        $components.appendChild($component)
+      })
+    }
+  </script>
+  <script>
+    fetch('/api/employee')
+      .then(res => res.json())
+      .then(employees => {
+        const $employees = document.querySelector('#employees-list')
+        employees.forEach(e => {
+          const $employee = document.createElement('li')
+          $employee.className = 'employees-item'
+          $employee.innerHTML = `
+            <a class="employees-item__link" href="${`/employee/${e.id}`}" title="Mas informacion">${e.id}</a>
+            <p>${e.name}</p>
+            <p>${e.email}</p>
+            <p>${e.salary}</p>
+            <p>${e.available}</p>
+          `
+          $employees.appendChild($employee)
+        })
+      })
+  </script>
+</body>
+
+</html>
